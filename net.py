@@ -170,7 +170,7 @@ if __name__ == '__main__':
 
     # Training settings
     parser = argparse.ArgumentParser(description='CapsNet with MNIST')
-    parser.add_argument('--batch-size', type=int, default=64, metavar='N',
+    parser.add_argument('--batch-size', type=int, default=128, metavar='N',
                         help='input batch size for training (default: 64)')
     parser.add_argument('--test-batch-size', type=int, default=80, metavar='N',
                         help='input batch size for testing')
@@ -196,7 +196,7 @@ if __name__ == '__main__':
     kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
 
     train_loader = torch.utils.data.DataLoader(
-        EMNIST('../data2', "balanced", train=True, download=True,
+        EMNIST('../data2', "digits", train=True, download=True,
                        transform=transforms.Compose([
                            transforms.Pad(2), transforms.RandomCrop(28),
                            transforms.ToTensor()
@@ -204,13 +204,13 @@ if __name__ == '__main__':
         batch_size=args.batch_size, shuffle=True, **kwargs)
 
     test_loader = torch.utils.data.DataLoader(
-        EMNIST('../data2', "balanced", train=False, transform=transforms.Compose([
+        EMNIST('../data2', "digits", train=False, transform=transforms.Compose([
             transforms.ToTensor()
         ])),
         batch_size=args.test_batch_size, shuffle=False, **kwargs)
 
     # EMNIST balanced dataset has 47 classes. See EMNIST paper
-    n_classes = 47
+    n_classes = 10
 
     # train_loader = torch.utils.data.DataLoader(
     #     datasets.MNIST('../data', train=True, download=True,
