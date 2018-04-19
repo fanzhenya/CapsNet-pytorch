@@ -159,6 +159,9 @@ class MarginLoss(nn.Module):
 
 
 if __name__ == '__main__':
+    print(__file__)
+    with open(__file__) as f:
+        print(f.read())
 
     import argparse
     import torch.optim as optim
