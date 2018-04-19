@@ -287,7 +287,7 @@ if __name__ == '__main__':
             correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
         test_loss /= len(test_loader.dataset)
-        print('\n{} Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(datetime.now(),
+        print('\n{} Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.2f}%)\n'.format(datetime.now(),
             test_loss, correct, len(test_loader.dataset),
             100. * correct / len(test_loader.dataset)))
         return test_loss
