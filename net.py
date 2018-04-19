@@ -7,6 +7,8 @@ import math
 
 from torch.optim import lr_scheduler
 from torch.autograd import Variable
+from EMNIST import EMNIST
+from datetime import datetime
 
 
 def squash(x):
@@ -165,10 +167,10 @@ if __name__ == '__main__':
 
     # Training settings
     parser = argparse.ArgumentParser(description='CapsNet with MNIST')
-    parser.add_argument('--batch-size', type=int, default=128, metavar='N',
+    parser.add_argument('--batch-size', type=int, default=64, metavar='N',
                         help='input batch size for training (default: 64)')
-    parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
-                        help='input batch size for testing (default: 1000)')
+    parser.add_argument('--test-batch-size', type=int, default=80, metavar='N',
+                        help='input batch size for testing')
     parser.add_argument('--epochs', type=int, default=250, metavar='N',
                         help='number of epochs to train (default: 10)')
     parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
@@ -180,7 +182,7 @@ if __name__ == '__main__':
     parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                         help='how many batches to wait before logging training status')
     parser.add_argument('--routing_iterations', type=int, default=3)
-    parser.add_argument('--with_reconstruction', action='store_true', default=False)
+    parser.add_argument('--with_reconstruction', action='store_true', default=True)
     args = parser.parse_args()
     args.cuda = not args.no_cuda and torch.cuda.is_available()
 
@@ -191,7 +193,7 @@ if __name__ == '__main__':
     kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
 
     train_loader = torch.utils.data.DataLoader(
-        datasets.MNIST('../data', train=True, download=True,
+        EMNIST('../data2', "balanced", train=True, download=True,
                        transform=transforms.Compose([
                            transforms.Pad(2), transforms.RandomCrop(28),
                            transforms.ToTensor()
@@ -199,15 +201,31 @@ if __name__ == '__main__':
         batch_size=args.batch_size, shuffle=True, **kwargs)
 
     test_loader = torch.utils.data.DataLoader(
-        datasets.MNIST('../data', train=False, transform=transforms.Compose([
+        EMNIST('../data2', "balanced", train=False, transform=transforms.Compose([
             transforms.ToTensor()
         ])),
         batch_size=args.test_batch_size, shuffle=False, **kwargs)
 
-    model = CapsNet(args.routing_iterations)
+    n_classes = 47
+
+    # train_loader = torch.utils.data.DataLoader(
+    #     datasets.MNIST('../data', train=True, download=True,
+    #                    transform=transforms.Compose([
+    #                        transforms.Pad(2), transforms.RandomCrop(28),
+    #                        transforms.ToTensor()
+    #                    ])),
+    #     batch_size=args.batch_size, shuffle=True, **kwargs)
+    #
+    # test_loader = torch.utils.data.DataLoader(
+    #     datasets.MNIST('../data', train=False, transform=transforms.Compose([
+    #         transforms.ToTensor()
+    #     ])),
+    #     batch_size=args.test_batch_size, shuffle=False, **kwargs)
+
+    model = CapsNet(args.routing_iterations, n_classes=n_classes)
 
     if args.with_reconstruction:
-        reconstruction_model = ReconstructionNet(16, 10)
+        reconstruction_model = ReconstructionNet(16, n_classes=n_classes)
         reconstruction_alpha = 0.0005
         model = CapsNetWithReconstruction(model, reconstruction_model)
 
@@ -239,7 +257,7 @@ if __name__ == '__main__':
             loss.backward()
             optimizer.step()
             if batch_idx % args.log_interval == 0:
-                print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                print('{} Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(datetime.now(),
                     epoch, batch_idx * len(data), len(train_loader.dataset),
                            100. * batch_idx / len(train_loader), loss.data[0]))
 
@@ -265,7 +283,7 @@ if __name__ == '__main__':
             correct += pred.eq(target.data.view_as(pred)).cpu().sum()
 
         test_loss /= len(test_loader.dataset)
-        print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
+        print('\n{} Test set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(datetime.now(),
             test_loss, correct, len(test_loader.dataset),
             100. * correct / len(test_loader.dataset)))
         return test_loss
