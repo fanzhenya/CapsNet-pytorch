@@ -206,6 +206,7 @@ if __name__ == '__main__':
         ])),
         batch_size=args.test_batch_size, shuffle=False, **kwargs)
 
+    # EMNIST balanced dataset has 47 classes. See EMNIST paper
     n_classes = 47
 
     # train_loader = torch.utils.data.DataLoader(
