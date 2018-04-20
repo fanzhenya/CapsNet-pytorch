@@ -196,7 +196,7 @@ if __name__ == '__main__':
     kwargs = {'num_workers': 1, 'pin_memory': True} if args.cuda else {}
 
     train_loader = torch.utils.data.DataLoader(
-        EMNIST('../data2', "digits", train=True, download=True,
+        EMNIST('../data2', "letters", train=True, download=True,
                        transform=transforms.Compose([
                            transforms.Pad(2), transforms.RandomCrop(28),
                            transforms.ToTensor()
@@ -204,13 +204,13 @@ if __name__ == '__main__':
         batch_size=args.batch_size, shuffle=True, **kwargs)
 
     test_loader = torch.utils.data.DataLoader(
-        EMNIST('../data2', "digits", train=False, transform=transforms.Compose([
+        EMNIST('../data2', "letters", train=False, transform=transforms.Compose([
             transforms.ToTensor()
         ])),
         batch_size=args.test_batch_size, shuffle=False, **kwargs)
 
     # EMNIST balanced dataset has 47 classes. See EMNIST paper
-    n_classes = 10
+    n_classes = 26
 
     # train_loader = torch.utils.data.DataLoader(
     #     datasets.MNIST('../data', train=True, download=True,
@@ -246,6 +246,7 @@ if __name__ == '__main__':
     def train(epoch):
         model.train()
         for batch_idx, (data, target) in enumerate(train_loader):
+            target -= 1
             if args.cuda:
                 data, target = data.cuda(), target.cuda()
             data, target = Variable(data), Variable(target, requires_grad=False)
@@ -270,6 +271,7 @@ if __name__ == '__main__':
         test_loss = 0
         correct = 0
         for data, target in test_loader:
+            target -= 1
             if args.cuda:
                 data, target = data.cuda(), target.cuda()
             data, target = Variable(data, volatile=True), Variable(target)
